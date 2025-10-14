@@ -92,7 +92,7 @@ class bord // Klasse met alle methoden en variabelen voor het bord
     // Methode om mogelijke zetten te tonen
     void tekenMogelijkeStenen()
     {
-       for (int x = 0; x<tabel.GetLength(0); x++)
+        for (int x = 0; x<tabel.GetLength(0); x++)
         {
             for (int y = 0; y<tabel.GetLength(1); y++)
             {
@@ -109,14 +109,17 @@ class bord // Klasse met alle methoden en variabelen voor het bord
 
             }
 
-       }
-              
+        }
+        afbeelding.Refresh();
     }
 
     Boolean IsEenMogelijkeZet(int x, int y)
     {
+        //for loop voor alle richtingen van maken
+       
         int dx = -1;
         int dy = 0;
+
         int checkX = x + dx;
         int checkY = y + dy;
 
@@ -125,11 +128,24 @@ class bord // Klasse met alle methoden en variabelen voor het bord
         {
             return false;
         }
+        int steenX = x;
+        int steenY = y;
+        if (tabel[steenX, steenY] != 0)
+        {
+            return false;
+        }
 
-        // Controleer of het vakje al bezet is
+        int andere = 1;
         if (beurt == 1)
         {
-            while (tabel[checkX, checkY] == 2)
+            andere = 2;
+        }
+            // Controleer of het vakje al bezet is
+            if (tabel[checkX, checkY] != andere)
+            {
+                return false;
+            }
+            while (tabel[checkX, checkY] == andere)
             {
                 checkX += dx;
                 checkY += dy;
@@ -138,15 +154,11 @@ class bord // Klasse met alle methoden en variabelen voor het bord
                     return false;
                 }
             }
-            if (tabel [checkX, checkY] == 1)
+            if (tabel [checkX, checkY] == beurt)
             {
                 return true;
             }
-        }
-        else
-        {
           
-        }
         return false;
     }
 
