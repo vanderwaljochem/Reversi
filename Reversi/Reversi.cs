@@ -1,6 +1,7 @@
 //-------------------Libraries importeren----------------------
 using System;
 using System.Drawing;
+using System.Security.Cryptography.Xml;
 using System.Windows.Forms;
 using Microsoft.VisualBasic.Logging;
 
@@ -115,10 +116,22 @@ class bord // Klasse met alle methoden en variabelen voor het bord
 
     Boolean IsEenMogelijkeZet(int x, int y)
     {
-        //for loop voor alle richtingen van maken
-       
-        int dx = -1;
-        int dy = 0;
+        //Alle richtingen checken
+        int dx, dy;
+        for (dx = -1; dx <= 1; dx++)
+        {
+            for (dy = -1; dy <= 1; dy++)
+            {
+                if (dx == 0 && dy == 0)
+                    continue; // Overslaan als beide dx en dy nul zijn
+                
+                if (CheckRichting(x, y, dx, dy))
+                    return true;
+
+                //checkrichting doet het nog niet, want idk wat ik doe???
+
+            }
+        }
 
         int checkX = x + dx;
         int checkY = y + dy;
@@ -141,26 +154,26 @@ class bord // Klasse met alle methoden en variabelen voor het bord
             andere = 2;
         }
             // Controleer of het vakje al bezet is
-            if (tabel[checkX, checkY] != andere)
+        if (tabel[checkX, checkY] != andere)
+        {
+            return false;
+        }
+        while (tabel[checkX, checkY] == andere)
+        {
+            checkX += dx;
+            checkY += dy;
+            if (checkX < 0 || checkX >= tabel.GetLength(0) || checkY < 0 || checkY >= tabel.GetLength(1))
             {
-                return false;
+                 return false;
             }
-            while (tabel[checkX, checkY] == andere)
-            {
-                checkX += dx;
-                checkY += dy;
-                if (checkX < 0 || checkX >= tabel.GetLength(0) || checkY < 0 || checkY >= tabel.GetLength(1))
-                {
-                    return false;
-                }
-            }
-            if (tabel [checkX, checkY] == beurt)
-            {
-                return true;
-            }
-          
-        return false;
-    }
+        }
+       
+        if (tabel [checkX, checkY] == beurt)
+        {
+            return true;
+        }
+           return false;
+ }
 
 
     public void nieuwSpel()
