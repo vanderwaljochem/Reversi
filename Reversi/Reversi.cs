@@ -1,7 +1,11 @@
 //-------------------Libraries importeren----------------------
 using System;
 using System.Drawing;
+<<<<<<< Updated upstream
 using System.Security.Cryptography.Xml;
+=======
+using System.Security.Cryptography.X509Certificates;
+>>>>>>> Stashed changes
 using System.Windows.Forms;
 using Microsoft.VisualBasic.Logging;
 
@@ -309,6 +313,7 @@ class bord // Klasse met alle methoden en variabelen voor het bord
         }
         afmeting10.Click += kiesAfmeting10;
 
+<<<<<<< Updated upstream
         // Muis eventhandler
         void muisKlik(object o, MouseEventArgs mea)
         {
@@ -324,6 +329,8 @@ class bord // Klasse met alle methoden en variabelen voor het bord
 
         tekenBeginStenen();
 
+=======
+>>>>>>> Stashed changes
         Application.Run(scherm);
     }
     // Methode om het bord te tekenen
@@ -383,5 +390,67 @@ class bord // Klasse met alle methoden en variabelen voor het bord
 
 class spelverloop
 {
+    private Label afbeelding;
+    private Bitmap plaatje;
+    private int[,] tabel;
+    private int breedte;
+    private int hoogte;
 
+    public spelverloop(Label afbeelding, Bitmap plaatje, int[,] tabel, int breedte, int hoogte)
+    {
+        new spelverloop(afbeelding, plaatje, tabel, breedte, hoogte);
+        this.afbeelding = afbeelding;
+        this.plaatje = plaatje;
+        this.tabel = tabel;
+        this.breedte = breedte;
+        this.hoogte = hoogte;
+        this.afbeelding.MouseClick += muisKlik;
+    }
+
+    private void muisKlik(object o, MouseEventArgs mea)
+    {
+        int x = mea.X;
+        int y = mea.Y;
+
+        int grootte = tabel.GetLength(0);
+        int vakBreedte = breedte / grootte;
+        int vakHoogte = hoogte / grootte;
+
+        int kolom = x / vakBreedte;
+        int rij = y / vakHoogte;
+
+        if (kolom < 0 || kolom >= grootte || rij < 0 || rij >= grootte) return;
+
+        int kleur = 1;
+
+        tekenStenen(kolom, rij, kleur);
+    }
+
+    private void tekenStenen(int kolom, int rij, int kleur)
+    {
+        int grootte = tabel.GetLength(0);
+        int vakBreedte = breedte / grootte;
+        int vakHoogte = hoogte / grootte;
+
+        int steenBreedte = (vakBreedte * 3 / 4);
+        int steenHoogte = (vakHoogte * 3 / 4);
+        int steenX = (kolom * vakBreedte) + (vakBreedte - steenBreedte) / 2;
+        int steenY = (rij * vakHoogte) + (vakHoogte - steenHoogte) / 2;
+
+        using (Graphics g = Graphics.FromImage(plaatje))
+        {
+            if (kleur == 0)
+            {
+                g.FillEllipse(Brushes.White, steenX, steenY, steenBreedte, steenHoogte);
+                g.DrawEllipse(Pens.Black, steenX, steenY, steenBreedte, steenHoogte);
+            }
+            else
+            {
+                g.FillEllipse(Brushes.Black, steenX, steenY, steenBreedte, steenHoogte);
+                g.DrawEllipse(Pens.White, steenX, steenY, steenBreedte, steenHoogte);
+            }
+        }
+
+        afbeelding.Invalidate();
+    }
 }
