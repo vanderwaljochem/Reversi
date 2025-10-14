@@ -93,9 +93,9 @@ class bord // Klasse met alle methoden en variabelen voor het bord
     // Methode om mogelijke zetten te tonen
     void tekenMogelijkeStenen()
     {
-        for (int x = 0; x<tabel.GetLength(0); x++)
+        for (int x = 0; x < tabel.GetLength(0); x++)
         {
-            for (int y = 0; y<tabel.GetLength(1); y++)
+            for (int y = 0; y < tabel.GetLength(1); y++)
             {
                 if (IsEenMogelijkeZet(x, y))
                 {
@@ -106,74 +106,91 @@ class bord // Klasse met alle methoden en variabelen voor het bord
                     Graphics g = Graphics.FromImage(afbeelding.Image);
                     g.DrawEllipse(Pens.Red, steenX * vakBreedte + vakBreedte / 4, steenY * vakHoogte + vakHoogte / 4, steenBreedte / 2, steenHoogte / 2);
                 }
-
-
             }
-
         }
         afbeelding.Refresh();
     }
 
     Boolean IsEenMogelijkeZet(int x, int y)
     {
-        //Alle richtingen checken
-        int dx, dy;
-        for (dx = -1; dx <= 1; dx++)
+        // Controleer of het vakje leeg is
+        if (tabel[x, y] != 0)
         {
-            for (dy = -1; dy <= 1; dy++)
+            return false;
+        }
+
+        // Controleer in alle richtingen
+        for (int dx = -1; dx <= 1; dx++)
+        {
+            for (int dy = -1; dy <= 1; dy++)
             {
                 if (dx == 0 && dy == 0)
-                    continue; // Overslaan als beide dx en dy nul zijn
-                
-                if (CheckRichting(x, y, dx, dy))
+                    continue; // Geen richting, dus doorgaan
+
+                if (CheckRichting(x, y, dx, dy)) // Kijk of er stenen kunnen worden omgedraaid in deze richting
+                {
                     return true;
-
-                //checkrichting doet het nog niet, want idk wat ik doe???
-
+                }
             }
         }
 
+        return false;
+    }
+
+    // Controleer een specifieke richting op geldigheid
+    Boolean CheckRichting(int x, int y, int dx, int dy)
+    {
         int checkX = x + dx;
         int checkY = y + dy;
-
-        // Controleer of de zet binnen de grenzen van het bord valt
-        if (checkX < 0 || checkX >= tabel.GetLength(0) || checkY < 0 || checkY >= tabel.GetLength(1))
-        {
-            return false;
-        }
-        int steenX = x;
-        int steenY = y;
-        if (tabel[steenX, steenY] != 0)
-        {
-            return false;
-        }
-
-        int andere = 1;
+        
+        int andere; //tegenstander
         if (beurt == 1)
         {
             andere = 2;
         }
-            // Controleer of het vakje al bezet is
+        else
+        {
+            andere = 1;
+        }
+
+        // Controleer of we buiten de grenzen van het bord zijn
+        if (checkX < 0 || checkX >= tabel.GetLength(0) || checkY < 0 || checkY >= tabel.GetLength(1))
+        {
+            return false;
+        }
+
+        // Controleer of het vakje van de tegenstander is
         if (tabel[checkX, checkY] != andere)
         {
             return false;
         }
-        while (tabel[checkX, checkY] == andere)
+
+        // Blijf in deze richting zoeken
+        while (true)
         {
             checkX += dx;
             checkY += dy;
+
+            // Controleer of we buiten de grenzen van het bord zijn
             if (checkX < 0 || checkX >= tabel.GetLength(0) || checkY < 0 || checkY >= tabel.GetLength(1))
             {
-                 return false;
+                return false;
+            }
+
+            // Als we een lege ruimte vinden, is de richting niet geldig
+            if (tabel[checkX, checkY] == 0)
+            {
+                return false;
+            }
+
+            // Als we onze eigen steen vinden, is de zet geldig
+            if (tabel[checkX, checkY] == beurt)
+            {
+                return true;
             }
         }
-       
-        if (tabel [checkX, checkY] == beurt)
-        {
-            return true;
-        }
-           return false;
- }
+    }
+
 
 
     public void nieuwSpel()
