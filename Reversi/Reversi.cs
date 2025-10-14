@@ -2,6 +2,7 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using Microsoft.VisualBasic.Logging;
 
 class Program
 {
@@ -16,7 +17,7 @@ class Program
 class bord // Klasse met alle methoden en variabelen voor het bord
 {
     //-----------------Variabelen---------------------------
-    private int beurt = 0;
+    private int beurt = 1;
     private int afmeting = 1;
     private int[,] tabel = new int[6, 6];
     private Bitmap plaatje;
@@ -24,8 +25,83 @@ class bord // Klasse met alle methoden en variabelen voor het bord
     private Form scherm;
     private int breedte = 600;
     private int hoogte = 600;
+    private int vakBreedte = 100;
+    private int vakHoogte = 100;
+
+    
 
     //-----------------Methoden-----------------------------
+    //-------- Stenen tekenen --------------------
+    void tekenStenen(int x, int y, int kleur)
+    {
+        // Berekeningen voor het tekenen van de stenen
+        int steenBreedte = (vakBreedte * 3 / 4);
+        int steenHoogte = (vakHoogte * 3 / 4);
+        int steenX = x / vakBreedte;
+        int steenY = y / vakHoogte;
+
+        // Controleer of de klik binnen het bord valt
+        if (x<0 || x>=breedte || y<0 || y>=hoogte)
+        {
+            return;
+        }
+
+        // Zorg dat er niet dubbel op een vak wordt geklikt
+        if (tabel[steenX, steenY] != 0)
+        {
+            return;
+        }
+
+        // Bijhouden waar de stenen liggen in de tabel
+        tabel[steenX, steenY] = kleur;
+
+        // Kleur van de steen bepalen en tekenen
+        Graphics g = Graphics.FromImage(afbeelding.Image);
+
+        if (kleur == 1) // Witte steen, speler 1
+        {
+            g.FillEllipse(Brushes.White, steenX * vakBreedte + vakBreedte / 8, steenY * vakHoogte + vakHoogte / 8, steenBreedte, steenHoogte);
+            g.DrawEllipse(Pens.Black, steenX * vakBreedte + vakBreedte / 8, steenY * vakHoogte + vakHoogte / 8, steenBreedte, steenHoogte);
+            
+
+        }
+        else if (kleur == 2) //Zwarte steen, speler 2
+        {
+            g.FillEllipse(Brushes.Black, steenX * vakBreedte + vakBreedte / 8, steenY * vakHoogte + vakHoogte / 8, steenBreedte, steenHoogte);
+            g.DrawEllipse(Pens.White, steenX * vakBreedte + vakBreedte / 8, steenY * vakHoogte + vakHoogte / 8, steenBreedte, steenHoogte);
+        }
+
+        if (beurt == 1)
+            beurt = 2;
+        else
+            beurt = 1;
+
+
+        afbeelding.Refresh();
+    }
+    
+    public void tekenBeginStenen()
+    {
+        tekenStenen (300, 300, 1); //Wit
+        tekenStenen (300, 299, 2); //Zwart
+        tekenStenen (299, 300, 2); //Zwart
+        tekenStenen (299, 299, 1); //Wit
+        beurt = 1; //Zodat speler 1 (wit) begint
+    }
+
+    // Methode om mogelijke zetten te tonen
+    void tekenMogelijkeStenen()
+    {
+        int steenX = 0;
+        int steenY = 0;
+        int steenBreedte = (vakBreedte * 3 / 4);
+        int steenHoogte = (vakHoogte * 3 / 4);
+        Graphics g = Graphics.FromImage(afbeelding.Image);
+        g.DrawEllipse(Pens.Red, steenX * vakBreedte + vakBreedte / 4, steenY * vakHoogte + vakHoogte / 4, steenBreedte / 2, steenHoogte / 2);
+        
+    }
+
+
     public void nieuwSpel()
     {
         // Window aanmaken
@@ -37,7 +113,7 @@ class bord // Klasse met alle methoden en variabelen voor het bord
         afbeelding = new Label();
         afbeelding.Location = new Point(100, 100);
         afbeelding.Size = new Size(600, 600);
-        afbeelding.BackColor = Color.White;
+        afbeelding.BackColor = Color.LightGreen;
         scherm.Controls.Add(afbeelding);
 
         plaatje = new Bitmap(600, 600);
@@ -105,6 +181,7 @@ class bord // Klasse met alle methoden en variabelen voor het bord
             tabel = new int[4, 4];
             plaatje = IntArrayToBitmap();
             afbeelding.Image = plaatje;
+            tekenBeginStenen();
         }
         afmeting4.Click += kiesAfmeting4;
 
@@ -115,6 +192,7 @@ class bord // Klasse met alle methoden en variabelen voor het bord
             tabel = new int[6, 6];
             plaatje = IntArrayToBitmap();
             afbeelding.Image = plaatje;
+            tekenBeginStenen();
         }
         afmeting6.Click += kiesAfmeting6;
 
@@ -125,6 +203,7 @@ class bord // Klasse met alle methoden en variabelen voor het bord
             tabel = new int[8, 8];
             plaatje = IntArrayToBitmap();
             afbeelding.Image = plaatje;
+            tekenBeginStenen();
         }
         afmeting8.Click += kiesAfmeting8;
 
@@ -135,6 +214,7 @@ class bord // Klasse met alle methoden en variabelen voor het bord
             tabel = new int[10, 10];
             plaatje = IntArrayToBitmap();
             afbeelding.Image = plaatje;
+            tekenBeginStenen();
         }
         afmeting10.Click += kiesAfmeting10;
 
@@ -143,8 +223,15 @@ class bord // Klasse met alle methoden en variabelen voor het bord
         {
             int x = mea.X;
             int y = mea.Y;
+
+            tekenStenen(x, y, beurt);
+            tekenMogelijkeStenen();
         }
+        scherm.Refresh();
+        scherm.MouseClick += muisKlik;
         afbeelding.MouseClick += muisKlik;
+
+        tekenBeginStenen();
 
         Application.Run(scherm);
     }
@@ -184,8 +271,8 @@ class bord // Klasse met alle methoden en variabelen voor het bord
         }
 
         // Berekeningen voor het tekenen van het bord
-        int vakBreedte = 600 / grootte;
-        int vakHoogte = 600 / grootte;
+        vakBreedte = 600 / grootte;
+        vakHoogte = 600 / grootte;
 
         // Bord tekenen
         Bitmap bitmap = new Bitmap(600, 600);
@@ -197,29 +284,6 @@ class bord // Klasse met alle methoden en variabelen voor het bord
             for (int vakY = 0; vakY < grootte; vakY++)
             {
                 g.DrawRectangle(Pens.Black, vakX * vakBreedte, vakY * vakHoogte, vakBreedte - 1, vakHoogte - 1);
-            }
-        }
-
-        //-------- Stenen tekenen --------------------
-        void tekenStenen(int x, int y, int kleur)
-        {
-            // Berekeningen voor het tekenen van de stenen
-            int steenBreedte = (vakBreedte * 3 / 4);
-            int steenHoogte = (vakHoogte * 3 / 4);
-            int steenX = ((x - 1) * vakBreedte + (vakBreedte - steenBreedte) / 2);
-            int steenY = ((y - 1) * vakHoogte + (vakHoogte - steenHoogte) / 2);
-
-            // Kleur van de steen bepalen en tekenen
-
-            if (kleur == 0) // Witte steen, speler 1
-            {
-                g.FillEllipse(Brushes.White, steenX, steenY, steenBreedte, steenHoogte);
-                g.DrawEllipse(Pens.Black, steenX, steenY, steenBreedte, steenHoogte);
-            }
-            else if (kleur == 1) //Zwarte steen, speler 2
-            {
-                g.FillEllipse(Brushes.Black, steenX, steenY, steenBreedte, steenHoogte);
-                g.DrawEllipse(Pens.White, steenX, steenY, steenBreedte, steenHoogte);
             }
         }
         return bitmap;
