@@ -92,13 +92,62 @@ class bord // Klasse met alle methoden en variabelen voor het bord
     // Methode om mogelijke zetten te tonen
     void tekenMogelijkeStenen()
     {
-        int steenX = 0;
-        int steenY = 0;
-        int steenBreedte = (vakBreedte * 3 / 4);
-        int steenHoogte = (vakHoogte * 3 / 4);
-        Graphics g = Graphics.FromImage(afbeelding.Image);
-        g.DrawEllipse(Pens.Red, steenX * vakBreedte + vakBreedte / 4, steenY * vakHoogte + vakHoogte / 4, steenBreedte / 2, steenHoogte / 2);
-        
+       for (int x = 0; x<tabel.GetLength(0); x++)
+        {
+            for (int y = 0; y<tabel.GetLength(1); y++)
+            {
+                if (IsEenMogelijkeZet(x, y))
+                {
+                    int steenX = x;
+                    int steenY = y;
+                    int steenBreedte = (vakBreedte * 3 / 4);
+                    int steenHoogte = (vakHoogte * 3 / 4);
+                    Graphics g = Graphics.FromImage(afbeelding.Image);
+                    g.DrawEllipse(Pens.Red, steenX * vakBreedte + vakBreedte / 4, steenY * vakHoogte + vakHoogte / 4, steenBreedte / 2, steenHoogte / 2);
+                }
+
+
+            }
+
+       }
+              
+    }
+
+    Boolean IsEenMogelijkeZet(int x, int y)
+    {
+        int dx = -1;
+        int dy = 0;
+        int checkX = x + dx;
+        int checkY = y + dy;
+
+        // Controleer of de zet binnen de grenzen van het bord valt
+        if (checkX < 0 || checkX >= tabel.GetLength(0) || checkY < 0 || checkY >= tabel.GetLength(1))
+        {
+            return false;
+        }
+
+        // Controleer of het vakje al bezet is
+        if (beurt == 1)
+        {
+            while (tabel[checkX, checkY] == 2)
+            {
+                checkX += dx;
+                checkY += dy;
+                if (checkX < 0 || checkX >= tabel.GetLength(0) || checkY < 0 || checkY >= tabel.GetLength(1))
+                {
+                    return false;
+                }
+            }
+            if (tabel [checkX, checkY] == 1)
+            {
+                return true;
+            }
+        }
+        else
+        {
+          
+        }
+        return false;
     }
 
 
