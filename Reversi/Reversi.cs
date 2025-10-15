@@ -5,12 +5,12 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.Collections.Generic;
 
-class Program
+class Program // Hoofdprogramma om het spel te starten
 {
-    static void Main()
+    static void Main() // Main methode om het spel te starten
     {
-        bord spel = new bord();
-        spel.nieuwSpel();
+        bord spel = new bord(); // Maak een nieuw bord aan
+        spel.nieuwSpel(); // Start een nieuw spel
     }
 }
 
@@ -28,6 +28,7 @@ class bord // Klasse met alle methoden en variabelen voor het bord
     private int hoogte = 600;
     private int vakBreedte = 100;
     private int vakHoogte = 100;
+    private bool ondersteuning = true;
 
     //-----------------Methoden-----------------------------
 
@@ -84,11 +85,17 @@ class bord // Klasse met alle methoden en variabelen voor het bord
         else
             beurt = 1;
 
+
+
         plaatje = IntArrayToBitmap();
         afbeelding.Image = plaatje;
 
         afbeelding.Refresh();
-        tekenMogelijkeStenen();  // Roep deze aan om de nieuwe mogelijke zetten te tonen voor de volgende beurt
+        if (ondersteuning)
+        {
+            tekenMogelijkeStenen();  // Roep deze aan om de nieuwe mogelijke zetten te tonen voor de volgende beurt
+            afbeelding.Refresh();
+        }
     }
 
     public void tekenBeginStenen()
@@ -239,7 +246,7 @@ class bord // Klasse met alle methoden en variabelen voor het bord
     {
         // Window aanmaken
         scherm = new Form();
-        scherm.Text = "A.2 - Reversi";
+        scherm.Text = "Switch 'n Score!";
         scherm.BackColor = Color.LightPink;
         scherm.ClientSize = new Size(1000, 1000);
 
@@ -262,7 +269,7 @@ class bord // Klasse met alle methoden en variabelen voor het bord
         Label titel = new Label();
         titel.Location = new Point(20, 10);
         titel.Size = new Size(200, 30);
-        titel.Text = "Switch and Score!";
+        titel.Text = "Switch 'n Score!";
         titel.Width = 250;
         titel.Font = fontGroot;
 
@@ -280,9 +287,23 @@ class bord // Klasse met alle methoden en variabelen voor het bord
         spelers.Width = 200;
         spelers.Font = fontKlein;
 
+        Label aandebeurt = new Label();
+        aandebeurt.Location = new Point(750, 200);
+        aandebeurt.Size = new Size(200, 30);
+        aandebeurt.Width = 200;
+        aandebeurt.Font = fontKlein;
+
+        if (beurt == 1)
+            aandebeurt.Text = $"Aan de beurt: Speler 1";
+        else if (beurt == 2)
+            aandebeurt.Text = $"Aan de beurt: Speler 2";
+
+
+
         scherm.Controls.Add(titel);
         scherm.Controls.Add(uitleg);
         scherm.Controls.Add(spelers);
+        scherm.Controls.Add(aandebeurt);
 
         //-----------------Gegevens van de speler------------------------
         TextBox speler1 = new TextBox();
@@ -396,8 +417,20 @@ class bord // Klasse met alle methoden en variabelen voor het bord
         scherm.MouseClick += muisKlik;
         afbeelding.MouseClick += muisKlik;
 
+        // Help eventhandler
+        void helpKnop(object o, EventArgs ea)
+        {
+            ondersteuning = !ondersteuning; // draai de waarde om
+        }
+        help.Click += helpKnop;
+
         tekenBeginStenen();
-        tekenMogelijkeStenen();
+        if (ondersteuning)
+        {    
+            tekenMogelijkeStenen();
+            afbeelding.Refresh();
+        }
+
         Application.Run(scherm);
     }
 
