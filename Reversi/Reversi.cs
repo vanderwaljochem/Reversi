@@ -252,19 +252,52 @@ class bord // Klasse met alle methoden en variabelen voor het bord
         plaatje = new Bitmap(600, 600);
         afbeelding.Image = plaatje;
 
+        // Uitleg over het spel, klik op OK om verder te gaan
+        MessageBox.Show("Speler 1 is wit en begint het spel, speler 2 is zwart. Druk op OK om de reversi te starten");
+
+        //-----------------Labels aanmaken----------------------
+        Font fontGroot = new Font("Times New Roman", 20);
+        Font fontKlein = new Font("Times New Roman", 12);
+
+        Label titel = new Label();
+        titel.Location = new Point(20, 10);
+        titel.Size = new Size(200, 30);
+        titel.Text = "Switch and Score!";
+        titel.Width = 250;
+        titel.Font = fontGroot;
+
+        Label uitleg = new Label();
+        uitleg.Location = new Point(300, 10);
+        uitleg.Size = new Size(500, 30);
+        uitleg.Text = "Kies een afmeting en voer de namen van de spelers in.";
+        uitleg.Width = 700;
+        uitleg.Font = fontGroot;
+
+        Label spelers = new Label();
+        spelers.Location = new Point(750, 75);
+        spelers.Size = new Size(200, 30);
+        spelers.Text = "Spelers:";
+        spelers.Width = 200;
+        spelers.Font = fontKlein;
+
+        scherm.Controls.Add(titel);
+        scherm.Controls.Add(uitleg);
+        scherm.Controls.Add(spelers);
+
         //-----------------Gegevens van de speler------------------------
         TextBox speler1 = new TextBox();
         speler1.Location = new Point(750, 100);
         speler1.Size = new Size(200, 30);
         speler1.Text = "Speler 1";
-        speler1.BackColor = Color.LightGray;
+        speler1.BackColor = Color.LightGreen;
         scherm.Controls.Add(speler1);
+
 
         TextBox speler2 = new TextBox();
         speler2.Location = new Point(750, 150);
         speler2.Size = new Size(200, 30);
         speler2.Text = "Speler 2";
-        speler2.BackColor = Color.LightGray;
+        speler2.BackColor = Color.LightGreen;
         scherm.Controls.Add(speler2);
 
         //----------------Buttons aanmaken----------------------
@@ -272,30 +305,36 @@ class bord // Klasse met alle methoden en variabelen voor het bord
         afmeting4.Location = new Point(20, 50);
         afmeting4.Size = new Size(50, 30);
         afmeting4.Text = "4x4";
-        afmeting4.BackColor = Color.LightGray;
+        afmeting4.BackColor = Color.LightGreen;
         scherm.Controls.Add(afmeting4);
 
         Button afmeting6 = new Button();
         afmeting6.Text = "6x6";
         afmeting6.Location = new Point(80, 50);
         afmeting6.Size = new Size(50, 30);
-        afmeting6.BackColor = Color.LightGray;
+        afmeting6.BackColor = Color.LightGreen;
         scherm.Controls.Add(afmeting6);
 
         Button afmeting8 = new Button();
         afmeting8.Text = "8x8";
         afmeting8.Location = new Point(140, 50);
         afmeting8.Size = new Size(50, 30);
-        afmeting8.BackColor = Color.LightGray;
+        afmeting8.BackColor = Color.LightGreen;
         scherm.Controls.Add(afmeting8);
 
         Button afmeting10 = new Button();
         afmeting10.Text = "10x10";
         afmeting10.Location = new Point(200, 50);
         afmeting10.Size = new Size(50, 30);
-        afmeting10.BackColor = Color.LightGray;
+        afmeting10.BackColor = Color.LightGreen;
         scherm.Controls.Add(afmeting10);
 
+        Button help = new Button();
+        help.Text = "HELP!";
+        help.Location = new Point(900, 600);
+        help.Size = new Size(75, 75);
+        help.BackColor = Color.LightGreen;
+        scherm.Controls.Add(help);
         //Eventhandlers voor de buttons
 
         //4x4 bord
