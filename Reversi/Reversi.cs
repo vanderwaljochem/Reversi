@@ -1,8 +1,8 @@
 //-------------------Libraries importeren----------------------
-using System; // Voor basis functionaliteiten
-using System.Drawing; // Voor het tekenen van de stenen en het bord
-using System.Windows.Forms; // Voor het maken van het GUI
-using System.Collections.Generic; // Voor het gebruik van lijsten
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Windows.Forms;
 
 
 class Programma // Hoofdprogramma om het spel te starten
@@ -20,7 +20,7 @@ class Tekenen
     private int vakBreedte;
     private int vakHoogte;
 
-    // Converteert de tabel naar een Bitmap, inclusief bordlijnen en stenen.
+    // Zet de int array om naar een bitmap voor weergave
     public Bitmap IntArrayToBitmap(int[,] tabel)
     {
         int grootte = tabel.GetLength(0);
@@ -29,7 +29,7 @@ class Tekenen
 
         Bitmap bitmap = new Bitmap(600, 600);
         Graphics g = Graphics.FromImage(bitmap);
-        g.Clear(Color.LightYellow); // Maak de achtergrond van het bord vakGeel
+        g.Clear(Color.LightYellow); // Maak de achtergrond van het bord vak geel
 
         for (int vakX = 0; vakX < grootte; vakX++)
         {
@@ -96,7 +96,7 @@ class Bord
         int middenX = tabel.GetLength(0) / 2;
         int middenY = tabel.GetLength(1) / 2;
 
-        // Standaard beginopstelling voor Reversi/Othello
+        // Beginpositie van de stenen
         tabel[middenX, middenY] = 1;      // Wit
         tabel[middenX, middenY - 1] = 2;  // Zwart
         tabel[middenX - 1, middenY] = 2;  // Zwart
@@ -107,15 +107,18 @@ class Bord
     // Geeft terug of een zet geldig is
     public bool IsEenMogelijkeZet(int x, int y)
     {
-        if (tabel[x, y] != 0) return false; // Vakje moet leeg zijn
+        if (tabel[x, y] != 0) 
+            return false; // Vakje moet leeg zijn
 
         for (int dx = -1; dx <= 1; dx++)
         {
             for (int dy = -1; dy <= 1; dy++)
             {
-                if (dx == 0 && dy == 0) continue;
-                // De oorspronkelijke CheckRichting gebruikt de 'beurt' variabele van de klasse 'bord'
-                if (CheckRichting(x, y, dx, dy)) return true;
+                if (dx == 0 && dy == 0) 
+                    continue;
+
+                if (CheckRichting(x, y, dx, dy)) 
+                    return true;
             }
         }
         return false;
@@ -318,6 +321,7 @@ class Gebruiker
     private TextBox speler1;
     private TextBox speler2;
     private Label aandebeurt;
+    private Label score = new Label();
 
     // Methode om de spelersnamen en beurtstatus op de GUI te updaten
     private void UpdateBeurt()
@@ -401,6 +405,10 @@ class Gebruiker
         // Flip de beurt
         spelBord.FlipBeurt();
 
+        // Update de score
+        (int wit, int zwart) = spelBord.TelScore();
+        score.Text = $"Score:\n {speler1.Text} (wit): {wit}\n {speler2.Text} (zwart): {zwart}";
+
         // Herteken het bord op basis van de nieuwe tabel
         plaatje = tekenHulp.IntArrayToBitmap(spelBord.Tabel);
         afbeelding.Image = plaatje;
@@ -417,13 +425,14 @@ class Gebruiker
 
         // Controleer op winst
         ControleerWinst();
+
     }
 
     private void ControleerWinst()
     {
         if (spelBord.Winnen())
         {
-            (int wit, int zwart) = spelBord.TelScore();
+            (int wit, int zwart) = spelBord.TelScore(); // Je vraagt 2 variabelen op, omdat je in de functie ook 2 returnt
 
             string winnaar;
             if (wit > zwart)
@@ -431,7 +440,7 @@ class Gebruiker
             else if (zwart > wit)
                 winnaar = speler2.Text + " (zwart)";
             else
-                winnaar = "Gelijkspel!";
+                winnaar = "Remise!";
 
             MessageBox.Show($"Spel afgelopen!\n Wit: {wit}\n Zwart: {zwart}\n Winnaar: {winnaar}");
         }
@@ -461,6 +470,21 @@ class Gebruiker
         // Uitleg over het spel, klik op OK om verder te gaan
         MessageBox.Show("Speler 1 is wit en begint het spel, speler 2 is zwart. Druk op OK om de reversi te starten");
 
+        //-----------------Gegevens van de speler------------------------
+        speler1 = new TextBox();
+        speler1.Location = new Point(750, 100);
+        speler1.Size = new Size(200, 30);
+        speler1.Text = "Speler 1";
+        speler1.BackColor = Color.LightGreen;
+        scherm.Controls.Add(speler1);
+
+        speler2 = new TextBox();
+        speler2.Location = new Point(750, 150);
+        speler2.Size = new Size(200, 30);
+        speler2.Text = "Speler 2";
+        speler2.BackColor = Color.LightGreen;
+        scherm.Controls.Add(speler2);
+
         //-----------------Labels aanmaken----------------------
         Font fontGroot = new Font("Times New Roman", 20);
         Font fontKlein = new Font("Times New Roman", 12);
@@ -486,31 +510,27 @@ class Gebruiker
         spelers.Width = 200;
         spelers.Font = fontKlein;
 
+        score.Location = new Point(750, 300);
+        score.Size = new Size(200, 100);
+        score.Width = 200;
+        score.Font = fontKlein;
+
+        (int wit, int zwart) = spelBord.TelScore();
+        score.Text = $"Score:\n {speler1.Text} (wit): {wit}\n {speler2.Text} (zwart): {zwart}";
+
         aandebeurt = new Label();
         aandebeurt.Location = new Point(750, 200);
         aandebeurt.Size = new Size(200, 100);
-        aandebeurt.Width = 200;
+        aandebeurt.Width = 250;
         aandebeurt.Font = fontKlein;
 
         scherm.Controls.Add(titel);
         scherm.Controls.Add(uitleg);
         scherm.Controls.Add(spelers);
         scherm.Controls.Add(aandebeurt);
+        scherm.Controls.Add(score);
 
-        //-----------------Gegevens van de speler------------------------
-        speler1 = new TextBox();
-        speler1.Location = new Point(750, 100);
-        speler1.Size = new Size(200, 30);
-        speler1.Text = "Speler 1";
-        speler1.BackColor = Color.LightGreen;
-        scherm.Controls.Add(speler1);
 
-        speler2 = new TextBox();
-        speler2.Location = new Point(750, 150);
-        speler2.Size = new Size(200, 30);
-        speler2.Text = "Speler 2";
-        speler2.BackColor = Color.LightGreen;
-        scherm.Controls.Add(speler2);
 
         //----------------Buttons aanmaken----------------------
         Button afmeting4 = new Button();
@@ -561,6 +581,7 @@ class Gebruiker
         beurtOverslaan.Size = new Size(75, 75);
         beurtOverslaan.BackColor = Color.LightGreen;
         scherm.Controls.Add(beurtOverslaan);
+
 
         //-----------------Eventhandlers----------------------
 
