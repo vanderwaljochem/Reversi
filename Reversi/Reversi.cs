@@ -1,10 +1,8 @@
 //-------------------Libraries importeren----------------------
 using System;
+using System.Diagnostics.Eventing.Reader;
 using System.Drawing;
-using System.Security.Cryptography.Xml;
-using System.Security.Cryptography.X509Certificates;
 using System.Windows.Forms;
-using Microsoft.VisualBasic.Logging;
 
 class Program
 {
@@ -30,13 +28,11 @@ class bord // Klasse met alle methoden en variabelen voor het bord
     private int vakBreedte = 100;
     private int vakHoogte = 100;
 
-    
-
     //-----------------Methoden-----------------------------
+
     //-------- Stenen tekenen --------------------
     void tekenStenen(int x, int y, int kleur)
     {
-     
         // Berekeningen voor het tekenen van de stenen
         int steenBreedte = (vakBreedte * 3 / 4);
         int steenHoogte = (vakHoogte * 3 / 4);
@@ -44,7 +40,7 @@ class bord // Klasse met alle methoden en variabelen voor het bord
         int steenY = y / vakHoogte;
 
         // Controleer of de klik binnen het bord valt
-        if (steenX<0 || steenX>=tabel.GetLength(0) || steenY<0 || steenY>=tabel.GetLength(1))
+        if (steenX < 0 || steenX >= tabel.GetLength(0) || steenY < 0 || steenY >= tabel.GetLength(1))
         {
             return;
         }
@@ -56,7 +52,7 @@ class bord // Klasse met alle methoden en variabelen voor het bord
         }
 
         // Controleren of de zet mogelijk is
-        if (!IsEenMogelijkeZet(steenX, steenY) == false)
+        if (!IsEenMogelijkeZet(steenX, steenY))
         {
             return;
         }
@@ -71,147 +67,101 @@ class bord // Klasse met alle methoden en variabelen voor het bord
         {
             g.FillEllipse(Brushes.White, steenX * vakBreedte + vakBreedte / 8, steenY * vakHoogte + vakHoogte / 8, steenBreedte, steenHoogte);
             g.DrawEllipse(Pens.Black, steenX * vakBreedte + vakBreedte / 8, steenY * vakHoogte + vakHoogte / 8, steenBreedte, steenHoogte);
-            
-
         }
-        else if (kleur == 2) //Zwarte steen, speler 2
+        else if (kleur == 2) // Zwarte steen, speler 2
         {
             g.FillEllipse(Brushes.Black, steenX * vakBreedte + vakBreedte / 8, steenY * vakHoogte + vakHoogte / 8, steenBreedte, steenHoogte);
             g.DrawEllipse(Pens.White, steenX * vakBreedte + vakBreedte / 8, steenY * vakHoogte + vakHoogte / 8, steenBreedte, steenHoogte);
         }
 
+        // Flip de beurt
         if (beurt == 1)
             beurt = 2;
         else
             beurt = 1;
 
-
         afbeelding.Refresh();
+        tekenMogelijkeStenen();  // Roep deze aan om de nieuwe mogelijke zetten te tonen voor de volgende beurt
     }
-    
+
     public void tekenBeginStenen()
     {
-        tekenStenen (300, 300, 1); //Wit
-        tekenStenen (300, 299, 2); //Zwart
-        tekenStenen (299, 300, 2); //Zwart
-        tekenStenen (299, 299, 1); //Wit
-        beurt = 1; //Zodat speler 1 (wit) begint
+        // Voor een 6x6 bord (pas aan als nodig, maar dit is standaard)
+        tabel[3, 3] = 1;  // Wit
+        tabel[3, 2] = 2;  // Zwart
+        tabel[2, 3] = 2;  // Zwart
+        tabel[2, 2] = 1;  // Wit
+        beurt = 1;  // Speler 1 begint
+
+        plaatje = IntArrayToBitmap();  // Herteken het bord met beginstenen
+        afbeelding.Image = plaatje;
     }
 
     // Methode om mogelijke zetten te tonen
     void tekenMogelijkeStenen()
     {
+        plaatje = IntArrayToBitmap();  // Herteken het bord met stenen, wat oude markeringen verwijdert
+        afbeelding.Image = plaatje;    // Update de afbeelding
+
+        Graphics g = Graphics.FromImage(afbeelding.Image);  // Nu op de nieuwe bitmap
+
         for (int x = 0; x < tabel.GetLength(0); x++)
         {
             for (int y = 0; y < tabel.GetLength(1); y++)
-            { ,.;
-                if (IsEenMogelijkeZet(x, y))
+            {
+                if (IsEenMogelijkeZet(x, y))  // Controleer voor de huidige beurt
                 {
-                    int steenX = x;
-                    int steenY = y;
-                    int steenBreedte = (vakBreedte * 3 / 4);
-                    int steenHoogte = (vakHoogte * 3 / 4);
-                    Graphics g = Graphics.FromImage(afbeelding.Image);
-                    g.DrawEllipse(Pens.Red, steenX * vakBreedte + vakBreedte / 4, steenY * vakHoogte + vakHoogte / 4, steenBreedte / 2, steenHoogte / 2);
-                }
-                else
-                {
-                    // Optioneel: Wis eventuele oude mogelijke zet markeringen
-                    int steenX = x;
-                    int steenY = y;
-                    int steenBreedte = (vakBreedte * 3 / 4);
-                    int steenHoogte = (vakHoogte * 3 / 4);
-                    Graphics g = Graphics.FromImage(afbeelding.Image);
-                    Pen onzichtbarePen = new Pen(Color.FromArgb(0, 0, 0, 0)); // Volledig transparant
-                    g.DrawEllipse(onzichtbarePen, steenX * vakBreedte + vakBreedte / 4, steenY * vakHoogte + vakHoogte / 4, steenBreedte / 2, steenHoogte / 2);
+                    Pen penKleur;
+                    if (beurt == 1)
+                        penKleur = Pens.Red;
+                    else if (beurt == 2)
+                        penKleur = Pens.Green;
+                    else
+                        penKleur = Pens.LightGreen; //Onzichtbaar voor fouten (zelfde kleur als achtergrond)
 
+                    int steenBreedte = (vakBreedte * 3 / 4);
+                    int steenHoogte = (vakHoogte * 3 / 4);
+                    g.DrawEllipse(penKleur, x * vakBreedte + vakBreedte / 4, y * vakHoogte + vakHoogte / 4, steenBreedte / 2, steenHoogte / 2);
                 }
             }
         }
-  
-        afbeelding.Refresh();
+
+        afbeelding.Refresh();  // Vernieuw de afbeelding om de markeringen te tonen
     }
 
-    Boolean IsEenMogelijkeZet(int x, int y)
+    bool IsEenMogelijkeZet(int x, int y)
     {
-        // Controleer of het vakje leeg is
-        if (tabel[x, y] != 0)
-        {
-            return false;
-        }
+        if (tabel[x, y] != 0) return false;  // Vakje moet leeg zijn
 
-        // Controleer in alle richtingen
         for (int dx = -1; dx <= 1; dx++)
         {
             for (int dy = -1; dy <= 1; dy++)
             {
-                if (dx == 0 && dy == 0)
-                    continue; // Geen richting, dus doorgaan
-
-                if (CheckRichting(x, y, dx, dy)) // Kijk of er stenen kunnen worden neergezet met deze richting
-                {
-                    return true;
-                }
+                if (dx == 0 && dy == 0) continue;
+                if (CheckRichting(x, y, dx, dy)) return true;
             }
         }
-
         return false;
     }
 
-    // Controleer een specifieke richting op geldigheid
-    Boolean CheckRichting(int x, int y, int dx, int dy)
+    bool CheckRichting(int x, int y, int dx, int dy)
     {
         int checkX = x + dx;
         int checkY = y + dy;
-        
-        int andere; //tegenstander
-        if (beurt == 1)
-        {
-            andere = 2;
-        }
-        else
-        {
-            andere = 1;
-        }
+        int andere = (beurt == 1) ? 2 : 1;
 
-        // Controleer of we buiten de grenzen van het bord zijn
-        if (checkX < 0 || checkX >= tabel.GetLength(0) || checkY < 0 || checkY >= tabel.GetLength(1))
-        {
-            return false;
-        }
+        if (checkX < 0 || checkX >= tabel.GetLength(0) || checkY < 0 || checkY >= tabel.GetLength(1)) return false;
+        if (tabel[checkX, checkY] != andere) return false;
 
-        // Controleer of het vakje van de tegenstander is
-        if (tabel[checkX, checkY] != andere)
-        {
-            return false;
-        }
-
-        // Blijf in deze richting zoeken
         while (true)
         {
             checkX += dx;
             checkY += dy;
-
-            // Controleer of we buiten de grenzen van het bord zijn
-            if (checkX < 0 || checkX >= tabel.GetLength(0) || checkY < 0 || checkY >= tabel.GetLength(1))
-            {
-                return false;
-            }
-
-            // Als we een lege ruimte vinden, is de richting niet geldig
-            if (tabel[checkX, checkY] == 0)
-            {
-                return false;
-            }
-
-            // Als we onze eigen steen vinden, is de zet geldig
-            if (tabel[checkX, checkY] == beurt)
-            {
-                return true;
-            }
+            if (checkX < 0 || checkX >= tabel.GetLength(0) || checkY < 0 || checkY >= tabel.GetLength(1)) return false;
+            if (tabel[checkX, checkY] == 0) return false;
+            if (tabel[checkX, checkY] == beurt) return true;
         }
     }
-
 
     public void nieuwSpel()
     {
@@ -245,9 +195,7 @@ class bord // Klasse met alle methoden en variabelen voor het bord
         speler2.BackColor = Color.LightGray;
         scherm.Controls.Add(speler2);
 
-
         //----------------Buttons aanmaken----------------------
-        //4x4 bord
         Button afmeting4 = new Button();
         afmeting4.Location = new Point(20, 50);
         afmeting4.Size = new Size(50, 30);
@@ -255,7 +203,6 @@ class bord // Klasse met alle methoden en variabelen voor het bord
         afmeting4.BackColor = Color.LightGray;
         scherm.Controls.Add(afmeting4);
 
-        //6x6 bord
         Button afmeting6 = new Button();
         afmeting6.Text = "6x6";
         afmeting6.Location = new Point(80, 50);
@@ -263,7 +210,6 @@ class bord // Klasse met alle methoden en variabelen voor het bord
         afmeting6.BackColor = Color.LightGray;
         scherm.Controls.Add(afmeting6);
 
-        //8x8 bord
         Button afmeting8 = new Button();
         afmeting8.Text = "8x8";
         afmeting8.Location = new Point(140, 50);
@@ -271,7 +217,6 @@ class bord // Klasse met alle methoden en variabelen voor het bord
         afmeting8.BackColor = Color.LightGray;
         scherm.Controls.Add(afmeting8);
 
-        //10x10 bord
         Button afmeting10 = new Button();
         afmeting10.Text = "10x10";
         afmeting10.Location = new Point(200, 50);
@@ -279,11 +224,7 @@ class bord // Klasse met alle methoden en variabelen voor het bord
         afmeting10.BackColor = Color.LightGray;
         scherm.Controls.Add(afmeting10);
 
-        // Eventhandlers voor de buttons
-        //Standaardbord
-
-        plaatje = IntArrayToBitmap();
-        afbeelding.Image = plaatje;
+        //Eventhandlers voor de buttons
 
         //4x4 bord
         void kiesAfmeting4(object o, EventArgs ea)
@@ -338,137 +279,47 @@ class bord // Klasse met alle methoden en variabelen voor het bord
         {
             int x = mea.X;
             int y = mea.Y;
-
             tekenStenen(x, y, beurt);
-            tekenMogelijkeStenen();
         }
-        scherm.Refresh();
         scherm.MouseClick += muisKlik;
         afbeelding.MouseClick += muisKlik;
 
         tekenBeginStenen();
         tekenMogelijkeStenen();
-
         Application.Run(scherm);
     }
-    // Methode om het bord te tekenen
+
     public Bitmap IntArrayToBitmap()
     {
-        int grootte = 6; // Standaardgrootte
-
-        if (afmeting == 0) // 4x4 bord
-        {
-            grootte = 4;
-
-            if (tabel.GetLength(0) != grootte)  // Controleer of de de tabel al het juiste aantal rijen heeft
-                tabel = new int[4, 4];          // Zo niet, maak een nieuwe tabel aan
-        }
-        else if (afmeting == 1) // 6x6 bord
-        {
-            grootte = 6;
-            if (tabel.GetLength(0) != grootte)
-                tabel = new int[6, 6];
-        }
-        else if (afmeting == 2) // 8x8 bord
-        {
-            grootte = 8;
-            if (tabel.GetLength(0) != grootte)
-                tabel = new int[8, 8];
-        }
-        else if (afmeting == 3) // 10x10 bord
-        {
-            grootte = 10;
-            if (tabel.GetLength(0) != grootte)
-                tabel = new int[10, 10];
-        }
-        else // Foutafhandeling
-        {
-            grootte = 6;
-        }
-
-        // Berekeningen voor het tekenen van het bord
+        int grootte = tabel.GetLength(0);
         vakBreedte = 600 / grootte;
         vakHoogte = 600 / grootte;
 
-        // Bord tekenen
         Bitmap bitmap = new Bitmap(600, 600);
         Graphics g = Graphics.FromImage(bitmap);
-        g.DrawRectangle(Pens.Black, 0, 0, breedte - 1, hoogte - 1);
 
         for (int vakX = 0; vakX < grootte; vakX++)
         {
             for (int vakY = 0; vakY < grootte; vakY++)
             {
-                g.DrawRectangle(Pens.Black, vakX * vakBreedte, vakY * vakHoogte, vakBreedte - 1, vakHoogte - 1);
+                g.DrawRectangle(Pens.Black, vakX * vakBreedte, vakY * vakHoogte, vakBreedte, vakHoogte);
+
+                if (tabel[vakX, vakY] == 1)
+                {
+                    int steenBreedte = (vakBreedte * 3 / 4);
+                    int steenHoogte = (vakHoogte * 3 / 4);
+                    g.FillEllipse(Brushes.White, vakX * vakBreedte + vakBreedte / 8, vakY * vakHoogte + vakHoogte / 8, steenBreedte, steenHoogte);
+                    g.DrawEllipse(Pens.Black, vakX * vakBreedte + vakBreedte / 8, vakY * vakHoogte + vakHoogte / 8, steenBreedte, steenHoogte);
+                }
+                else if (tabel[vakX, vakY] == 2)
+                {
+                    int steenBreedte = (vakBreedte * 3 / 4);
+                    int steenHoogte = (vakHoogte * 3 / 4);
+                    g.FillEllipse(Brushes.Black, vakX * vakBreedte + vakBreedte / 8, vakY * vakHoogte + vakHoogte / 8, steenBreedte, steenHoogte);
+                    g.DrawEllipse(Pens.White, vakX * vakBreedte + vakBreedte / 8, vakY * vakHoogte + vakHoogte / 8, steenBreedte, steenHoogte);
+                }
             }
         }
         return bitmap;
-    }
-}
-
-class spelverloop
-{
-    private Label afbeelding;
-    private Bitmap plaatje;
-    private int[,] tabel;
-    private int breedte;
-    private int hoogte;
-
-    public spelverloop(Label afbeelding, Bitmap plaatje, int[,] tabel, int breedte, int hoogte)
-    {
-        new spelverloop(afbeelding, plaatje, tabel, breedte, hoogte);
-        this.afbeelding = afbeelding;
-        this.plaatje = plaatje;
-        this.tabel = tabel;
-        this.breedte = breedte;
-        this.hoogte = hoogte;
-        this.afbeelding.MouseClick += muisKlik;
-    }
-
-    private void muisKlik(object o, MouseEventArgs mea)
-    {
-        int x = mea.X;
-        int y = mea.Y;
-
-        int grootte = tabel.GetLength(0);
-        int vakBreedte = breedte / grootte;
-        int vakHoogte = hoogte / grootte;
-
-        int kolom = x / vakBreedte;
-        int rij = y / vakHoogte;
-
-        if (kolom < 0 || kolom >= grootte || rij < 0 || rij >= grootte) return;
-
-        int kleur = 1;
-
-        tekenStenen(kolom, rij, kleur);
-    }
-
-    private void tekenStenen(int kolom, int rij, int kleur)
-    {
-        int grootte = tabel.GetLength(0);
-        int vakBreedte = breedte / grootte;
-        int vakHoogte = hoogte / grootte;
-
-        int steenBreedte = (vakBreedte * 3 / 4);
-        int steenHoogte = (vakHoogte * 3 / 4);
-        int steenX = (kolom * vakBreedte) + (vakBreedte - steenBreedte) / 2;
-        int steenY = (rij * vakHoogte) + (vakHoogte - steenHoogte) / 2;
-
-        using (Graphics g = Graphics.FromImage(plaatje))
-        {
-            if (kleur == 0)
-            {
-                g.FillEllipse(Brushes.White, steenX, steenY, steenBreedte, steenHoogte);
-                g.DrawEllipse(Pens.Black, steenX, steenY, steenBreedte, steenHoogte);
-            }
-            else
-            {
-                g.FillEllipse(Brushes.Black, steenX, steenY, steenBreedte, steenHoogte);
-                g.DrawEllipse(Pens.White, steenX, steenY, steenBreedte, steenHoogte);
-            }
-        }
-
-        afbeelding.Invalidate();
     }
 }
