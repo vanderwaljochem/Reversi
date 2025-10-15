@@ -1,11 +1,8 @@
 //-------------------Libraries importeren----------------------
 using System;
 using System.Drawing;
-<<<<<<< Updated upstream
 using System.Security.Cryptography.Xml;
-=======
 using System.Security.Cryptography.X509Certificates;
->>>>>>> Stashed changes
 using System.Windows.Forms;
 using Microsoft.VisualBasic.Logging;
 
@@ -39,6 +36,7 @@ class bord // Klasse met alle methoden en variabelen voor het bord
     //-------- Stenen tekenen --------------------
     void tekenStenen(int x, int y, int kleur)
     {
+     
         // Berekeningen voor het tekenen van de stenen
         int steenBreedte = (vakBreedte * 3 / 4);
         int steenHoogte = (vakHoogte * 3 / 4);
@@ -46,13 +44,19 @@ class bord // Klasse met alle methoden en variabelen voor het bord
         int steenY = y / vakHoogte;
 
         // Controleer of de klik binnen het bord valt
-        if (x<0 || x>=breedte || y<0 || y>=hoogte)
+        if (steenX<0 || steenX>=tabel.GetLength(0) || steenY<0 || steenY>=tabel.GetLength(1))
         {
             return;
         }
 
         // Zorg dat er niet dubbel op een vak wordt geklikt
         if (tabel[steenX, steenY] != 0)
+        {
+            return;
+        }
+
+        // Controleren of de zet mogelijk is
+        if (!IsEenMogelijkeZet(steenX, steenY) == false)
         {
             return;
         }
@@ -100,7 +104,7 @@ class bord // Klasse met alle methoden en variabelen voor het bord
         for (int x = 0; x < tabel.GetLength(0); x++)
         {
             for (int y = 0; y < tabel.GetLength(1); y++)
-            {
+            { ,.;
                 if (IsEenMogelijkeZet(x, y))
                 {
                     int steenX = x;
@@ -110,8 +114,21 @@ class bord // Klasse met alle methoden en variabelen voor het bord
                     Graphics g = Graphics.FromImage(afbeelding.Image);
                     g.DrawEllipse(Pens.Red, steenX * vakBreedte + vakBreedte / 4, steenY * vakHoogte + vakHoogte / 4, steenBreedte / 2, steenHoogte / 2);
                 }
+                else
+                {
+                    // Optioneel: Wis eventuele oude mogelijke zet markeringen
+                    int steenX = x;
+                    int steenY = y;
+                    int steenBreedte = (vakBreedte * 3 / 4);
+                    int steenHoogte = (vakHoogte * 3 / 4);
+                    Graphics g = Graphics.FromImage(afbeelding.Image);
+                    Pen onzichtbarePen = new Pen(Color.FromArgb(0, 0, 0, 0)); // Volledig transparant
+                    g.DrawEllipse(onzichtbarePen, steenX * vakBreedte + vakBreedte / 4, steenY * vakHoogte + vakHoogte / 4, steenBreedte / 2, steenHoogte / 2);
+
+                }
             }
         }
+  
         afbeelding.Refresh();
     }
 
@@ -131,7 +148,7 @@ class bord // Klasse met alle methoden en variabelen voor het bord
                 if (dx == 0 && dy == 0)
                     continue; // Geen richting, dus doorgaan
 
-                if (CheckRichting(x, y, dx, dy)) // Kijk of er stenen kunnen worden omgedraaid in deze richting
+                if (CheckRichting(x, y, dx, dy)) // Kijk of er stenen kunnen worden neergezet met deze richting
                 {
                     return true;
                 }
@@ -194,7 +211,6 @@ class bord // Klasse met alle methoden en variabelen voor het bord
             }
         }
     }
-
 
 
     public void nieuwSpel()
@@ -277,6 +293,7 @@ class bord // Klasse met alle methoden en variabelen voor het bord
             plaatje = IntArrayToBitmap();
             afbeelding.Image = plaatje;
             tekenBeginStenen();
+            tekenMogelijkeStenen();
         }
         afmeting4.Click += kiesAfmeting4;
 
@@ -288,6 +305,7 @@ class bord // Klasse met alle methoden en variabelen voor het bord
             plaatje = IntArrayToBitmap();
             afbeelding.Image = plaatje;
             tekenBeginStenen();
+            tekenMogelijkeStenen();
         }
         afmeting6.Click += kiesAfmeting6;
 
@@ -299,6 +317,7 @@ class bord // Klasse met alle methoden en variabelen voor het bord
             plaatje = IntArrayToBitmap();
             afbeelding.Image = plaatje;
             tekenBeginStenen();
+            tekenMogelijkeStenen();
         }
         afmeting8.Click += kiesAfmeting8;
 
@@ -310,10 +329,10 @@ class bord // Klasse met alle methoden en variabelen voor het bord
             plaatje = IntArrayToBitmap();
             afbeelding.Image = plaatje;
             tekenBeginStenen();
+            tekenMogelijkeStenen();
         }
         afmeting10.Click += kiesAfmeting10;
 
-<<<<<<< Updated upstream
         // Muis eventhandler
         void muisKlik(object o, MouseEventArgs mea)
         {
@@ -328,9 +347,8 @@ class bord // Klasse met alle methoden en variabelen voor het bord
         afbeelding.MouseClick += muisKlik;
 
         tekenBeginStenen();
+        tekenMogelijkeStenen();
 
-=======
->>>>>>> Stashed changes
         Application.Run(scherm);
     }
     // Methode om het bord te tekenen
