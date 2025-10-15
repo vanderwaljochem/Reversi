@@ -1,9 +1,8 @@
 //-------------------Libraries importeren----------------------
-using System;
-using System.Diagnostics.Eventing.Reader;
-using System.Drawing;
-using System.Windows.Forms;
-using System.Collections.Generic;
+using System; // Voor basis functionaliteiten
+using System.Drawing; // Voor het tekenen van de stenen en het bord
+using System.Windows.Forms; // Voor het maken van het GUI
+using System.Collections.Generic; // Voor de lijst van te wisselen stenen
 
 class Program // Hoofdprogramma om het spel te starten
 {
@@ -18,8 +17,8 @@ class Program // Hoofdprogramma om het spel te starten
 class bord // Klasse met alle methoden en variabelen voor het bord
 {
     //-----------------Variabelen---------------------------
-    private int beurt = 1;
-    private int afmeting = 1;
+    private int beurt = 1; // 1 is speler 1 (wit), 2 is speler 2 (zwart)
+    private int afmeting = 1; // 0 is 4x4, 1 is 6x6, 2 is 8x8, 3 is 10x10
     private int[,] tabel = new int[6, 6];
     private Bitmap plaatje;
     private Label afbeelding;
@@ -29,6 +28,8 @@ class bord // Klasse met alle methoden en variabelen voor het bord
     private int vakBreedte = 100;
     private int vakHoogte = 100;
     private bool ondersteuning = true;
+
+
 
     //-----------------Methoden-----------------------------
 
@@ -80,12 +81,11 @@ class bord // Klasse met alle methoden en variabelen voor het bord
         }
 
         // Flip de beurt
+
         if (beurt == 1)
             beurt = 2;
         else
             beurt = 1;
-
-
 
         plaatje = IntArrayToBitmap();
         afbeelding.Image = plaatje;
@@ -166,6 +166,7 @@ class bord // Klasse met alle methoden en variabelen voor het bord
         int checkX = x + dx;
         int checkY = y + dy;
         int andere;
+        
         if (beurt == 1)
             andere = 2;
         else
@@ -293,13 +294,6 @@ class bord // Klasse met alle methoden en variabelen voor het bord
         aandebeurt.Width = 200;
         aandebeurt.Font = fontKlein;
 
-        if (beurt == 1)
-            aandebeurt.Text = $"Aan de beurt: Speler 1";
-        else if (beurt == 2)
-            aandebeurt.Text = $"Aan de beurt: Speler 2";
-
-
-
         scherm.Controls.Add(titel);
         scherm.Controls.Add(uitleg);
         scherm.Controls.Add(spelers);
@@ -313,13 +307,25 @@ class bord // Klasse met alle methoden en variabelen voor het bord
         speler1.BackColor = Color.LightGreen;
         scherm.Controls.Add(speler1);
 
-
         TextBox speler2 = new TextBox();
         speler2.Location = new Point(750, 150);
         speler2.Size = new Size(200, 30);
         speler2.Text = "Speler 2";
         speler2.BackColor = Color.LightGreen;
         scherm.Controls.Add(speler2);
+
+        if (beurt == 1)
+        {
+            string spelerEen = speler1.Text;
+            aandebeurt.Text = $"Aan de beurt: {spelerEen}";
+            afbeelding.Refresh();
+        }
+        else if (beurt == 2)
+        {
+            string spelerTwee = speler2.Text;
+            aandebeurt.Text = $"Aan de beurt: {spelerTwee}";
+            afbeelding.Refresh();
+        }
 
         //----------------Buttons aanmaken----------------------
         Button afmeting4 = new Button();
