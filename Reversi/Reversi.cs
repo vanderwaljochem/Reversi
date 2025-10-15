@@ -266,7 +266,7 @@ class bord // Klasse met alle methoden en variabelen voor het bord
                 {
                     checkX += dx;
                     checkY += dy;
-                    if (checkX < 0 || checkX >= tabel.GetLength(0) || checkY < 0 || checkY >= tabel.GetLength(1)) break;
+                    if (checkX < 0 || checkX >= tabel.GetLength(0) || checkY < 0 || checkY >= tabel.GetLength(1)) return false;
                     if (tabel[checkX, checkY] == 0) return false;
                     if (tabel[checkX, checkY] == speler) return true;
                 }
