@@ -2,7 +2,8 @@
 using System; // Voor basis functionaliteiten
 using System.Drawing; // Voor het tekenen van de stenen en het bord
 using System.Windows.Forms; // Voor het maken van het GUI
-using System.Collections.Generic; // Voor de lijst van te wisselen stenen
+using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader; // Voor de lijst van te wisselen stenen
 
 class Program // Hoofdprogramma om het spel te starten
 {
@@ -188,16 +189,19 @@ class bord // Klasse met alle methoden en variabelen voor het bord
         }
     }
 
-    bool VakkenGevuld()
-    {
-        if IsEenMogelijkeZet() == true{
-            continue
-        }
-        else 
+    bool Winnen()
         {
-            return 
+        for (int x = 0; x < tabel.GetLength(0); x++)
+        {
+            for (int y = 0; y < tabel.GetLength(1); y++)
+            {
+                if (tabel[x, y] == 0 && IsEenMogelijkeZet(x, y))
+                {
+                    return false; // Er is nog een mogelijke zet
+                }
+            }
         }
-
+        return true; // Geen mogelijke zetten meer, het spel is voorbij
     }
     void WisselKleurVanStenen(int x, int y)
     {
@@ -439,9 +443,17 @@ class bord // Klasse met alle methoden en variabelen voor het bord
 
         tekenBeginStenen();
         if (ondersteuning)
-        {    
+        {
             tekenMogelijkeStenen();
             afbeelding.Refresh();
+        }
+
+        if (Winnen())
+            {
+            if (beurt == 1)
+                MessageBox.Show($"Gefeliciteerd {speler2.Text}, je hebt gewonnen!");
+            else
+                MessageBox.Show($"Gefeliciteerd {speler1.Text}, je hebt gewonnen!");
         }
 
         UpdateBeurt();
