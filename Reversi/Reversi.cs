@@ -3,6 +3,7 @@ using System;
 using System.Diagnostics.Eventing.Reader;
 using System.Drawing;
 using System.Windows.Forms;
+using System.Collections.Generic;
 
 class Program
 {
@@ -60,6 +61,9 @@ class bord // Klasse met alle methoden en variabelen voor het bord
         // Bijhouden waar de stenen liggen in de tabel
         tabel[steenX, steenY] = kleur;
 
+        // Wissel de kleuren van de stenen indien nodig
+        WisselKleurVanStenen(steenX, steenY); 
+
         // Kleur van de steen bepalen en tekenen
         Graphics g = Graphics.FromImage(afbeelding.Image);
 
@@ -80,17 +84,23 @@ class bord // Klasse met alle methoden en variabelen voor het bord
         else
             beurt = 1;
 
+        plaatje = IntArrayToBitmap();
+        afbeelding.Image = plaatje;
+
         afbeelding.Refresh();
         tekenMogelijkeStenen();  // Roep deze aan om de nieuwe mogelijke zetten te tonen voor de volgende beurt
     }
 
     public void tekenBeginStenen()
     {
+        int middenX = tabel.GetLength(0) / 2;
+        int middenY = tabel.GetLength(1) / 2;
+
         // Voor een 6x6 bord (pas aan als nodig, maar dit is standaard)
-        tabel[3, 3] = 1;  // Wit
-        tabel[3, 2] = 2;  // Zwart
-        tabel[2, 3] = 2;  // Zwart
-        tabel[2, 2] = 1;  // Wit
+        tabel[middenX, middenY] = 1;  // Wit
+        tabel[middenX, middenY - 1] = 2;  // Zwart
+        tabel[middenX - 1, middenY] = 2;  // Zwart
+        tabel[middenX - 1, middenY -1] = 1;  // Wit
         beurt = 1;  // Speler 1 begint
 
         plaatje = IntArrayToBitmap();  // Herteken het bord met beginstenen
@@ -117,7 +127,7 @@ class bord // Klasse met alle methoden en variabelen voor het bord
                     else if (beurt == 2)
                         penKleur = Pens.Green;
                     else
-                        penKleur = Pens.LightGreen; //Onzichtbaar voor fouten (zelfde kleur als achtergrond)
+                        penKleur = Pens.LightYellow; //Onzichtbaar voor fouten (zelfde kleur als achtergrond)
 
                     int steenBreedte = (vakBreedte * 3 / 4);
                     int steenHoogte = (vakHoogte * 3 / 4);
@@ -148,7 +158,11 @@ class bord // Klasse met alle methoden en variabelen voor het bord
     {
         int checkX = x + dx;
         int checkY = y + dy;
-        int andere = (beurt == 1) ? 2 : 1;
+        int andere;
+        if (beurt == 1)
+            andere = 2;
+        else
+            andere = 1;
 
         if (checkX < 0 || checkX >= tabel.GetLength(0) || checkY < 0 || checkY >= tabel.GetLength(1)) return false;
         if (tabel[checkX, checkY] != andere) return false;
@@ -163,18 +177,76 @@ class bord // Klasse met alle methoden en variabelen voor het bord
         }
     }
 
+  
+    void WisselKleurVanStenen(int x, int y)
+    {
+        for (int dx = -1; dx <= 1; dx++)
+        {
+            for (int dy = -1; dy <= 1; dy++)
+            {
+                if (dx == 0 && dy == 0) continue;
+                if (CheckRichting(x, y, dx, dy))
+                {
+                    WisselInRichting(x, y, dx, dy);
+                }
+            }
+        }
+    }
+    void WisselInRichting(int x, int y, int dx, int dy)
+    {
+        int andere;
+        if (beurt == 1)
+            andere = 2;
+        else
+            andere = 1;
+
+        int checkX = x + dx;
+        int checkY = y + dy;
+
+        // Lijst om de stenen op te slaan
+        List<(int, int)> teWisselen = new List<(int, int)>();
+
+        while (checkX >= 0 && checkX < tabel.GetLength(0) &&
+               checkY >= 0 && checkY < tabel.GetLength(1))
+        {
+            if (tabel[checkX, checkY] == andere)
+            {
+                // Tegenstandersteen gevonden, opslaan
+                teWisselen.Add((checkX, checkY));
+            }
+            else if (tabel[checkX, checkY] == beurt)
+            {
+                // Wissel alle stenen ertussen
+                foreach ((int wisselX, int wisselY) in teWisselen)
+                {
+                    tabel[wisselX, wisselY] = beurt;
+                }
+                return;
+            }
+            else
+            {
+                return;
+            }
+
+            // Ga verder in dezelfde richting
+            checkX += dx;
+            checkY += dy;
+        }
+    }
+
+
     public void nieuwSpel()
     {
         // Window aanmaken
         scherm = new Form();
         scherm.Text = "A.2 - Reversi";
-        scherm.BackColor = Color.LightYellow;
+        scherm.BackColor = Color.LightPink;
         scherm.ClientSize = new Size(1000, 1000);
 
         afbeelding = new Label();
         afbeelding.Location = new Point(100, 100);
         afbeelding.Size = new Size(600, 600);
-        afbeelding.BackColor = Color.LightGreen;
+        afbeelding.BackColor = Color.LightYellow;
         scherm.Controls.Add(afbeelding);
 
         plaatje = new Bitmap(600, 600);
@@ -280,6 +352,7 @@ class bord // Klasse met alle methoden en variabelen voor het bord
             int x = mea.X;
             int y = mea.Y;
             tekenStenen(x, y, beurt);
+            WisselKleurVanStenen(x, y);
         }
         scherm.MouseClick += muisKlik;
         afbeelding.MouseClick += muisKlik;
