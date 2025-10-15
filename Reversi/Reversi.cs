@@ -28,13 +28,15 @@ class bord // Klasse met alle methoden en variabelen voor het bord
     private int vakBreedte = 100;
     private int vakHoogte = 100;
     private bool ondersteuning = true;
-
+    private TextBox speler1;
+    private TextBox speler2;
+    private Label aandebeurt;
 
 
     //-----------------Methoden-----------------------------
 
     //-------- Stenen tekenen --------------------
-    void tekenStenen(int x, int y, int kleur)
+    public void tekenStenen(int x, int y, int kleur)
     {
         // Berekeningen voor het tekenen van de stenen
         int steenBreedte = (vakBreedte * 3 / 4);
@@ -96,6 +98,7 @@ class bord // Klasse met alle methoden en variabelen voor het bord
             tekenMogelijkeStenen();  // Roep deze aan om de nieuwe mogelijke zetten te tonen voor de volgende beurt
             afbeelding.Refresh();
         }
+        UpdateBeurt();
     }
 
     public void tekenBeginStenen()
@@ -185,7 +188,17 @@ class bord // Klasse met alle methoden en variabelen voor het bord
         }
     }
 
-  
+    bool VakkenGevuld()
+    {
+        if IsEenMogelijkeZet() == true{
+            continue
+        }
+        else 
+        {
+            return 
+        }
+
+    }
     void WisselKleurVanStenen(int x, int y)
     {
         for (int dx = -1; dx <= 1; dx++)
@@ -242,6 +255,13 @@ class bord // Klasse met alle methoden en variabelen voor het bord
         }
     }
 
+    void UpdateBeurt()
+    {
+        if (beurt == 1)
+            aandebeurt.Text = $"Aan de beurt: {speler1.Text}, (wit)";
+        else
+            aandebeurt.Text = $"Aan de beurt: {speler2.Text}, (zwart)";
+    }
 
     public void nieuwSpel()
     {
@@ -288,9 +308,9 @@ class bord // Klasse met alle methoden en variabelen voor het bord
         spelers.Width = 200;
         spelers.Font = fontKlein;
 
-        Label aandebeurt = new Label();
+        aandebeurt = new Label();
         aandebeurt.Location = new Point(750, 200);
-        aandebeurt.Size = new Size(200, 30);
+        aandebeurt.Size = new Size(200, 100);
         aandebeurt.Width = 200;
         aandebeurt.Font = fontKlein;
 
@@ -300,35 +320,22 @@ class bord // Klasse met alle methoden en variabelen voor het bord
         scherm.Controls.Add(aandebeurt);
 
         //-----------------Gegevens van de speler------------------------
-        TextBox speler1 = new TextBox();
+        speler1 = new TextBox();
         speler1.Location = new Point(750, 100);
         speler1.Size = new Size(200, 30);
         speler1.Text = "Speler 1";
         speler1.BackColor = Color.LightGreen;
         scherm.Controls.Add(speler1);
 
-        TextBox speler2 = new TextBox();
+        speler2 = new TextBox();
         speler2.Location = new Point(750, 150);
         speler2.Size = new Size(200, 30);
         speler2.Text = "Speler 2";
         speler2.BackColor = Color.LightGreen;
         scherm.Controls.Add(speler2);
 
-        if (beurt == 1)
-        {
-            string spelerEen = speler1.Text;
-            aandebeurt.Text = $"Aan de beurt: {spelerEen}";
-            afbeelding.Refresh();
-        }
-        else if (beurt == 2)
-        {
-            string spelerTwee = speler2.Text;
-            aandebeurt.Text = $"Aan de beurt: {spelerTwee}";
-            afbeelding.Refresh();
-        }
-
-        //----------------Buttons aanmaken----------------------
-        Button afmeting4 = new Button();
+    //----------------Buttons aanmaken----------------------
+    Button afmeting4 = new Button();
         afmeting4.Location = new Point(20, 50);
         afmeting4.Size = new Size(50, 30);
         afmeting4.Text = "4x4";
@@ -437,6 +444,7 @@ class bord // Klasse met alle methoden en variabelen voor het bord
             afbeelding.Refresh();
         }
 
+        UpdateBeurt();
         Application.Run(scherm);
     }
 
