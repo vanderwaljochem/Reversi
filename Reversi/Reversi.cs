@@ -14,7 +14,7 @@ class Programma // Hoofdprogramma om het spel te starten
     }
 }
 
-//-----------------HULPKLASSE VOOR HET TEKENEN---------------------------
+//-----------------KLASSE VOOR HET TEKENEN---------------------------
 class Tekenen
 {
     private int vakBreedte;
@@ -67,7 +67,7 @@ class Tekenen
     }
 }
 
-//-----------------SPELBORD LOGICA---------------------------
+//-----------------SPELBORD -------------------------------
 class Bord
 {
     //-----------------Variabelen---------------------------
@@ -75,12 +75,12 @@ class Bord
     private int afmeting = 1; // 0 is 4x4, 1 is 6x6, 2 is 8x8, 3 is 10x10
     private int[,] tabel = new int[6, 6];
 
-    // Eigenschappen om toegang te geven tot de privé variabelen
+    // Eigenschappen om toegang te geven tot de private variabelen
     public int Beurt { get { return beurt; } set { beurt = value; } }
     public int[,] Tabel { get { return tabel; } set { tabel = value; } }
     public int Afmeting { get { return afmeting; } set { afmeting = value; } }
 
-    // Constructor om de startstenen te initialiseren
+    // Beginstenen tekenen
     public Bord()
     {
         tekenBeginStenen();
@@ -136,6 +136,7 @@ class Bord
         else
             andere = 1;
 
+        // Richting niet mogelijk
         if (checkX < 0 || checkX >= tabel.GetLength(0) || checkY < 0 || checkY >= tabel.GetLength(1)) return false;
         if (tabel[checkX, checkY] != andere) return false;
 
@@ -149,7 +150,7 @@ class Bord
         }
     }
 
-    // Voert de zet uit: plaatst de steen en wisselt kleuren
+    // Voert de zet uit, plaatst de steen en wisselt kleuren
     public void WisselStenen(int x, int y)
     {
         for (int dx = -1; dx <= 1; dx++)
@@ -187,12 +188,12 @@ class Bord
         {
             if (tabel[checkX, checkY] == andere)
             {
-                // Tegenstandersteen gevonden, opslaan
+                // Steen van tegenstander gevonden en opslaan
                 teWisselen.Add((checkX, checkY));
             }
             else if (tabel[checkX, checkY] == beurt)
             {
-                // De eigen steen is bereikt, wissel alle stenen ertussen
+                // Wissel stenen 
                 foreach ((int wisselX, int wisselY) in teWisselen)
                 {
                     tabel[wisselX, wisselY] = beurt;
@@ -201,7 +202,6 @@ class Bord
             }
             else
             {
-                // Leeg vakje of onjuiste steen, stop de zoektocht in deze richting
                 return;
             }
 
@@ -211,33 +211,33 @@ class Bord
         }
     }
 
-    // Controleert of het spel afgelopen is (geen mogelijke zetten meer voor beide spelers)
+    // Controleert of het spel afgelopen is (dus geen mogelijke zetten meer voor beide spelers)
     public bool Winnen()
     {
-        int huidigeBeurt = beurt; // Sla de huidige beurt op
+        int huidigeBeurt = beurt;
 
-        // 1. Controleer voor speler 1
+        // Controle uitvoeren voor speler 1 
         beurt = 1;
         if (HeeftMogelijkeZet())
         {
-            beurt = huidigeBeurt; // Herstel de beurt
+            beurt = huidigeBeurt; 
             return false;
         }
 
-        // 2. Controleer voor speler 2
+        // Controle uitvoeren voor speler 2
         beurt = 2;
         if (HeeftMogelijkeZet())
         {
-            beurt = huidigeBeurt; // Herstel de beurt
+            beurt = huidigeBeurt;
             return false;
         }
 
         // Beide spelers hebben geen zetten meer
-        beurt = huidigeBeurt; // Herstel de beurt
+        beurt = huidigeBeurt; 
         return true;
     }
 
-    // Hulpfunctie om te controleren of de huidige speler een mogelijke zet heeft
+    // Controle of er een zet mogelijk is voor de huidige speler
     private bool HeeftMogelijkeZet()
     {
         for (int x = 0; x < tabel.GetLength(0); x++)
@@ -253,15 +253,15 @@ class Bord
         return false;
     }
 
-    // Gebruikt voor de Winnen() methode om te controleren of een speler een zet kan doen
+    // Wordt gebruikt voor de Winnen() methode om te controleren of een speler een zet kan doen
     private bool IsEenMogelijkeZetVoorSpeler(int x, int y, int speler)
     {
         if (tabel[x, y] != 0) return false;
 
         int oorspronkelijkeBeurt = beurt;
-        beurt = speler; // Tijdelijke aanpassing van de beurt
+        beurt = speler; // Beurt even tijdelijk aanpassen
         bool resultaat = IsEenMogelijkeZet(x, y);
-        beurt = oorspronkelijkeBeurt; // Herstel de beurt
+        beurt = oorspronkelijkeBeurt; // Herstel beurt
         return resultaat;
     }
 
@@ -304,12 +304,12 @@ class Bord
     }
 }
 
-//-----------------GUI KLASSE VOOR DE WINDOWS FORMS IMPLEMENTATIE---------------------------
+//-----------------KLASSE VOOR DE WINDOWS FORMS---------------------------
 class Gebruiker
 {
-    // Variabelen van de oude 'bord' klasse die nu deel uitmaken van de GUI
-    private Bord spelBord = new Bord(); // Instantie van de logica
-    private Tekenen tekenHulp = new Tekenen(); // Instantie van de tekenhulp
+    // Variabelen
+    private Bord spelBord = new Bord(); 
+    private Tekenen tekenHulp = new Tekenen(); 
     private Bitmap plaatje;
     private Label afbeelding;
     private Form scherm;
@@ -323,7 +323,7 @@ class Gebruiker
     private Label aandebeurt;
     private Label score = new Label();
 
-    // Methode om de spelersnamen en beurtstatus op de GUI te updaten
+    // Methode om de spelersnamen en beurtstatus te updaten
     private void UpdateBeurt()
     {
         if (spelBord.Beurt == 1)
@@ -332,10 +332,10 @@ class Gebruiker
             aandebeurt.Text = $"Aan de beurt: {speler2.Text}, (zwart)";
     }
 
-    // Tekent de mogelijke zetten als rode/groene cirkels
+    // Tekent de mogelijke zetten als rode of groene cirkels
     void tekenMogelijkeStenen()
     {
-        // Haal de basisafbeelding met stenen op
+        // Haal het basisplaatje met stenen op
         plaatje = tekenHulp.IntArrayToBitmap(spelBord.Tabel);
         afbeelding.Image = plaatje;
 
@@ -348,7 +348,6 @@ class Gebruiker
         {
             for (int y = 0; y < grootte; y++)
             {
-                // Gebruik de IsEenMogelijkeZet methode van de Bord logica
                 if (spelBord.IsEenMogelijkeZet(x, y))
                 {
                     Pen penKleur;
@@ -370,10 +369,10 @@ class Gebruiker
     }
 
 
-    // Tekent de stenen, valideert de zet en wisselt de stenen (GUI-zijde van tekenStenen)
+    // Tekent de stenen, kijkt of de zet mogelijk is en wisselt de stenen
     public void tekenStenen(int x, int y, int kleur)
     {
-        // Gebruik de berekende vakafmetingen
+        // Al berekende vakafmetingen
         int grootte = spelBord.Tabel.GetLength(0);
         vakBreedte = tekenHulp.GetVakBreedte(grootte);
         vakHoogte = tekenHulp.GetVakHoogte(grootte);
@@ -393,13 +392,13 @@ class Gebruiker
             return;
         }
 
-        // Controleren of de zet mogelijk is (gebruikt de logica van de Bord klasse)
+        // Controleren of de zet mogelijk is
         if (!spelBord.IsEenMogelijkeZet(steenX, steenY))
         {
             return;
         }
 
-        // Wissel de kleuren van de stenen en plaats de nieuwe steen (logica van de Bord klasse)
+        // Wissel de kleuren van de stenen en plaats de nieuwe steen
         spelBord.WisselStenen(steenX, steenY);
 
         // Flip de beurt
@@ -428,11 +427,12 @@ class Gebruiker
 
     }
 
+    // Vergelijk het aantal stenen en laat de winnaar zien
     private void ControleerWinst()
     {
         if (spelBord.Winnen())
         {
-            (int wit, int zwart) = spelBord.TelScore(); // Je vraagt 2 variabelen op, omdat je in de functie ook 2 returnt
+            (int wit, int zwart) = spelBord.TelScore();
 
             string winnaar;
             if (wit > zwart)
@@ -446,7 +446,7 @@ class Gebruiker
         }
     }
 
-    // Hoofdmethode om de GUI op te zetten en het spel te starten
+    // Hoofdmethode om het spel te starten
     public void nieuwSpel()
     {
         scherm = new Form();
@@ -463,7 +463,7 @@ class Gebruiker
         plaatje = new Bitmap(600, 600);
         afbeelding.Image = plaatje;
 
-        // Eerste keer de tabel omzetten naar een bitmap
+        // De tabel omzetten naar een bitmap
         plaatje = tekenHulp.IntArrayToBitmap(spelBord.Tabel);
         afbeelding.Image = plaatje;
 
@@ -530,8 +530,6 @@ class Gebruiker
         scherm.Controls.Add(aandebeurt);
         scherm.Controls.Add(score);
 
-
-
         //----------------Buttons aanmaken----------------------
         Button afmeting4 = new Button();
         afmeting4.Location = new Point(20, 50);
@@ -581,7 +579,6 @@ class Gebruiker
         beurtOverslaan.Size = new Size(75, 75);
         beurtOverslaan.BackColor = Color.LightGreen;
         scherm.Controls.Add(beurtOverslaan);
-
 
         //-----------------Eventhandlers----------------------
 
@@ -639,12 +636,12 @@ class Gebruiker
             int y = mea.Y;
             tekenStenen(x, y, spelBord.Beurt);
         }
-        afbeelding.MouseClick += muisKlik; // Reageer alleen op klikken op het bord
+        afbeelding.MouseClick += muisKlik;
 
         // Help eventhandler
         void helpKnop(object o, EventArgs ea)
         {
-            ondersteuning = !ondersteuning; // draai de waarde om
+            ondersteuning = !ondersteuning; // draai dus de waarde om
             if (ondersteuning)
             {
                 tekenMogelijkeStenen();
@@ -652,7 +649,7 @@ class Gebruiker
             }
             else
             {
-                // Als de ondersteuning uit gaat, herteken dan het bord zonder markeringen
+                // Herteken bord zonder mogelijke zetten
                 plaatje = tekenHulp.IntArrayToBitmap(spelBord.Tabel);
                 afbeelding.Image = plaatje;
                 afbeelding.Refresh();
@@ -663,7 +660,7 @@ class Gebruiker
         // Nieuw spel eventhandler
         void nieuwSpelKnop_Click(object o, EventArgs ea)
         {
-            // Reset het spelbord naar de standaard 6x6 (Afmeting 1) en herteken
+            // Reset het spelbord naar de standaard 6x6 en herteken
             spelBord.PasAfmetingAan(1);
             beurtResetEnTeken();
         }
