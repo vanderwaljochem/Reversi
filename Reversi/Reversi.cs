@@ -67,7 +67,7 @@ class bord // Klasse met alle methoden en variabelen voor het bord
         tabel[steenX, steenY] = kleur;
 
         // Wissel de kleuren van de stenen indien nodig
-        WisselKleurVanStenen(steenX, steenY); 
+        WisselKleurVanStenen(steenX, steenY);
 
         // Kleur van de steen bepalen en tekenen
         Graphics g = Graphics.FromImage(afbeelding.Image);
@@ -100,6 +100,32 @@ class bord // Klasse met alle methoden en variabelen voor het bord
             afbeelding.Refresh();
         }
         UpdateBeurt();
+
+        if (Winnen())
+        {
+            int wit = 0;
+            int zwart = 0;
+
+            for (int aantalX = 0; aantalX < tabel.GetLength(0); aantalX++)
+            {
+                for (int aantalY = 0; aantalY < tabel.GetLength(1); aantalY++)
+                {
+                    if (tabel[aantalX, aantalY] == 1) wit++;
+                    else if (tabel[aantalX, aantalY] == 2) zwart++;
+                }
+            }
+
+            string winnaar;
+            if (wit > zwart)
+                winnaar = speler1.Text + " (wit)";
+            else if (zwart > wit)
+                winnaar = speler2.Text + " (zwart)";
+            else
+                winnaar = "Gelijkspel!";
+
+            MessageBox.Show($"Spel afgelopen!\n Wit: {wit}\n Zwart: {zwart}\n Winnaar: {winnaar}");
+        }
+
     }
 
     public void tekenBeginStenen()
@@ -111,7 +137,7 @@ class bord // Klasse met alle methoden en variabelen voor het bord
         tabel[middenX, middenY] = 1;  // Wit
         tabel[middenX, middenY - 1] = 2;  // Zwart
         tabel[middenX - 1, middenY] = 2;  // Zwart
-        tabel[middenX - 1, middenY -1] = 1;  // Wit
+        tabel[middenX - 1, middenY - 1] = 1;  // Wit
         beurt = 1;  // Speler 1 begint
 
         plaatje = IntArrayToBitmap();  // Herteken het bord met beginstenen
@@ -170,7 +196,7 @@ class bord // Klasse met alle methoden en variabelen voor het bord
         int checkX = x + dx;
         int checkY = y + dy;
         int andere;
-        
+
         if (beurt == 1)
             andere = 2;
         else
@@ -190,19 +216,68 @@ class bord // Klasse met alle methoden en variabelen voor het bord
     }
 
     bool Winnen()
+    {
+        for (int speler = 1; speler <= 2; speler++)
         {
-        for (int x = 0; x < tabel.GetLength(0); x++)
-        {
-            for (int y = 0; y < tabel.GetLength(1); y++)
+            for (int x = 0; x < tabel.GetLength(0); x++)
             {
-                if (tabel[x, y] == 0 && IsEenMogelijkeZet(x, y))
+                for (int y = 0; y < tabel.GetLength(1); y++)
                 {
-                    return false; // Er is nog een mogelijke zet
+                    if (tabel[x, y] == 0 && IsEenMogelijkeZetVoorSpeler(x, y, speler))
+                    {
+                        return false; // Er is nog een mogelijke zet
+                    }
+                }
+            }
+            // Wissel van speler
+            if (beurt == 1)
+                beurt = 2;
+            else
+                beurt = 1;
+        }
+        return true; // Geen mogelijke zetten meer voor beide spelers
+    }
+
+    bool IsEenMogelijkeZetVoorSpeler(int x, int y, int speler)
+    {
+        if (tabel[x, y] != 0) 
+            return false;
+
+        int andere;
+        if (speler == 1)
+            andere = 2;
+        else
+            andere = 1;
+
+        for (int dx = -1; dx <= 1; dx++)
+        {
+            for (int dy = -1; dy <= 1; dy++)
+            {
+                if (dx == 0 && dy == 0)
+                    continue;
+
+                int checkX = x + dx;
+                int checkY = y + dy;
+
+                if (checkX < 0 || checkX >= tabel.GetLength(0) || checkY < 0 || checkY >= tabel.GetLength(1)) continue;
+                if (tabel[checkX, checkY] != andere) continue;
+
+                while (true)
+                {
+                    checkX += dx;
+                    checkY += dy;
+                    if (checkX < 0 || checkX >= tabel.GetLength(0) || checkY < 0 || checkY >= tabel.GetLength(1)) break;
+                    if (tabel[checkX, checkY] == 0) return false;
+                    if (tabel[checkX, checkY] == speler) return true;
                 }
             }
         }
-        return true; // Geen mogelijke zetten meer, het spel is voorbij
+
+        return false;
     }
+
+
+
     void WisselKleurVanStenen(int x, int y)
     {
         for (int dx = -1; dx <= 1; dx++)
@@ -338,8 +413,8 @@ class bord // Klasse met alle methoden en variabelen voor het bord
         speler2.BackColor = Color.LightGreen;
         scherm.Controls.Add(speler2);
 
-    //----------------Buttons aanmaken----------------------
-    Button afmeting4 = new Button();
+        //----------------Buttons aanmaken----------------------
+        Button afmeting4 = new Button();
         afmeting4.Location = new Point(20, 50);
         afmeting4.Size = new Size(50, 30);
         afmeting4.Text = "4x4";
@@ -429,7 +504,7 @@ class bord // Klasse met alle methoden en variabelen voor het bord
             int x = mea.X;
             int y = mea.Y;
             tekenStenen(x, y, beurt);
-            WisselKleurVanStenen(x, y);
+
         }
         scherm.MouseClick += muisKlik;
         afbeelding.MouseClick += muisKlik;
@@ -449,7 +524,7 @@ class bord // Klasse met alle methoden en variabelen voor het bord
         }
 
         if (Winnen())
-            {
+        {
             if (beurt == 1)
                 MessageBox.Show($"Gefeliciteerd {speler2.Text}, je hebt gewonnen!");
             else
